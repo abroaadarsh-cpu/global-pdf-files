@@ -1,0 +1,562 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Global PDF</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@500;700&family=Inter:wght@400;700&family=Lora:ital,wght@0,400;0,700;1,400&family=Noto+Naskh+Arabic:wght@400;700&family=Noto+Nastaliq+Urdu:wght@400;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<style>
+:root{--bg:#f2f4f8;--card:#fff;--tx:#161a2b;--mut:#626b82;--line:#dde1ea;--ac:#1d2a5b;--acx:#fff;--red:#b3262e;--ok:#17744f;--soft:#e8ecf7}
+[data-theme=dark]{--bg:#0d1120;--card:#161b2e;--tx:#e9ecf6;--mut:#99a2bd;--line:#2a3150;--ac:#9fb1ff;--acx:#0d1120;--red:#ff7b83;--ok:#4fd1a0;--soft:#1f2640;color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--tx);font:16px/1.55 system-ui,"Noto Naskh Arabic",sans-serif}
+a{color:var(--ac)}
+h1,h2,h3{font-family:"Bricolage Grotesque","Noto Naskh Arabic",sans-serif;margin:.2em 0 .4em;line-height:1.25}
+#hdr{position:sticky;top:0;z-index:20;background:var(--card);border-bottom:1px solid var(--line)}
+#hdr:after{content:"";display:block;height:5px;background:repeating-linear-gradient(90deg,var(--red) 0 14px,var(--ac) 14px 28px,var(--card) 28px 34px)}
+.bar{max-width:1000px;margin:auto;padding:10px 14px;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.logo{font:700 1.25rem "Bricolage Grotesque",sans-serif;text-decoration:none;color:var(--tx);margin-inline-end:auto}
+.bar nav{display:flex;gap:4px}
+.bar nav a{padding:6px 11px;border-radius:8px;text-decoration:none;color:var(--tx)}
+.bar nav a.on{background:var(--soft);font-weight:700}
+select,input,textarea,button{font:inherit;color:inherit}
+.inp,select,textarea,input[type=number],input[type=text],input[type=password],input[type=tel]{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:8px 10px;width:100%}
+textarea{resize:vertical}
+#hdr select{width:auto;padding:6px}
+.btn{border:1px solid var(--line);background:var(--card);padding:8px 14px;border-radius:8px;cursor:pointer}
+.btn.pri{background:var(--ac);color:var(--acx);border-color:var(--ac);font-weight:700}
+.btn.dan{color:var(--red);border-color:var(--red)}
+.btn:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:3px solid var(--ac);outline-offset:2px}
+main{max-width:1000px;margin:auto;padding:14px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px;margin-bottom:14px}
+.mut{color:var(--mut);font-size:.9rem}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end}
+.row>label{display:flex;flex-direction:column;gap:3px;font-size:.85rem;color:var(--mut);flex:1 1 110px}
+.row>label.chk{flex:0 0 auto;flex-direction:row;align-items:center;gap:6px}
+.row>label.chk input{width:auto}
+.row input[type=color]{padding:2px;height:38px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px}
+.pc{display:block;text-decoration:none;color:inherit;background:var(--card);border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.pc:hover{border-color:var(--ac)}
+.pc .th{aspect-ratio:3/4;background:var(--soft);display:grid;place-items:center;position:relative;color:var(--mut);font-weight:700}
+.pc .th img{width:100%;height:100%;object-fit:cover}
+.pc .pt{font-weight:700;padding:8px 10px 0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pc .mut{padding:0 10px 8px}
+.bd{position:absolute;top:8px;inset-inline-start:8px;background:var(--red);color:#fff;font-style:normal;font-size:.8rem;padding:2px 8px;border-radius:99px}
+.bd.g{background:var(--ok)}
+.tabs{display:flex;gap:6px;margin-bottom:12px}
+.tabs button{flex:1;padding:10px;border:1px solid var(--line);background:var(--card);border-radius:8px;cursor:pointer;font-weight:700}
+.tabs button.on{background:var(--ac);color:var(--acx);border-color:var(--ac)}
+.blk{border:1px solid var(--line);border-radius:10px;padding:10px;margin:10px 0;background:var(--bg)}
+.blk-h{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
+.blk-h button{padding:3px 9px;margin-inline-start:4px}
+.blk textarea{margin-bottom:8px;min-height:90px}
+.blk img{max-height:90px;border-radius:6px;display:block;margin-bottom:8px}
+.prev{display:flex;flex-direction:column;align-items:center;gap:12px;background:var(--soft);padding:12px;border-radius:10px}
+.prev canvas,#pages canvas{width:100%;max-width:640px;height:auto;background:#fff;box-shadow:0 1px 6px rgba(0,0,0,.25);display:block}
+#pages{display:flex;flex-direction:column;align-items:center;gap:12px}
+.pay{border:2px dashed var(--red);border-radius:10px;padding:12px;margin:10px 0}
+.pay ol{padding-inline-start:20px;margin:6px 0}
+.hint{background:var(--soft);padding:8px 12px;border-radius:8px;font-size:.9rem}
+#busy{position:fixed;inset:0;background:rgba(0,0,0,.6);color:#fff;display:none;place-items:center;z-index:50;font-weight:700;text-align:center;padding:20px}
+#toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:var(--tx);color:var(--bg);padding:10px 16px;border-radius:99px;z-index:60;display:none;max-width:90vw}
+[hidden]{display:none!important}
+@media (prefers-reduced-motion:no-preference){.pc{transition:border-color .15s}}
+</style>
+</head>
+<body>
+<header id="hdr"></header>
+<main id="app"></main>
+<div id="busy"><div id="busyt">…</div></div>
+<div id="toast"></div>
+<input type="file" id="imgIn" accept="image/*" multiple hidden>
+
+<script>
+/* ============ EDIT THESE ============ */
+const CONFIG={
+  SITE_NAME:'Global PDF',
+  TOPIC:'global-pdf-site',        // repos with this topic are shown on the home page
+  REPO_NAME:'global-pdf-files',   // each user's files go to this repo in their own GitHub account
+  FEE_PERCENT:20,                 // extra amount the buyer pays to the company
+  COMPANY_JAZZCASH:'03XX-XXXXXXX',// <-- put your JazzCash number here
+  COMPANY_NAME:'Global PDF',      // <-- name on your JazzCash account
+  FEATURED_REPOS:[]               // e.g. ['abroaadarsh-cpu/global-pdf-files']
+};
+/* ==================================== */
+
+pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
+const I18N={
+en:{home:'Home',upload:'Upload',account:'Account',search:'Search PDFs…',free:'Free',paid:'Paid',download:'Download',copyLink:'Copy link',listen:'Listen',stop:'Stop',del:'Delete',title:'Title',desc:'Description',makePdf:'Make PDF',fromDevice:'From device',addText:'+ Text',addImage:'+ Image',pageSize:'Page size',orient:'Orientation',portrait:'Portrait',landscape:'Landscape',margin:'Margin (mm)',bg:'Page color',border:'Border',pageNums:'Page numbers',preview:'Live preview',publish:'Publish',token:'GitHub token',login:'Log in',logout:'Log out',voice:'Voice',record:'Record voice',stopRec:'Stop recording',chooseAudio:'Choose audio file',unlock:'Unlock',code:'Unlock code',price:'Price (PKR)',empty:'No PDFs yet. Upload the first one!',loading:'Loading…',copied:'Link copied',loginFirst:'Log in with your GitHub token first'},
+ur:{home:'ہوم',upload:'اپلوڈ',account:'اکاؤنٹ',search:'پی ڈی ایف تلاش کریں…',free:'مفت',paid:'ادائیگی والی',download:'ڈاؤن لوڈ',copyLink:'لنک کاپی کریں',listen:'سنیں',stop:'روکیں',del:'حذف کریں',title:'عنوان',desc:'تفصیل',makePdf:'پی ڈی ایف بنائیں',fromDevice:'ڈیوائس سے',addText:'+ متن',addImage:'+ تصویر',pageSize:'صفحے کا سائز',orient:'رخ',portrait:'عمودی',landscape:'افقی',margin:'حاشیہ (mm)',bg:'صفحے کا رنگ',border:'بارڈر',pageNums:'صفحہ نمبر',preview:'لائیو پریویو',publish:'شائع کریں',token:'گٹ ہب ٹوکن',login:'لاگ ان',logout:'لاگ آؤٹ',voice:'آواز',record:'آواز ریکارڈ کریں',stopRec:'ریکارڈنگ روکیں',chooseAudio:'آڈیو فائل چنیں',unlock:'کھولیں',code:'ان لاک کوڈ',price:'قیمت (PKR)',empty:'ابھی کوئی پی ڈی ایف نہیں۔ پہلی آپ اپلوڈ کریں!',loading:'لوڈ ہو رہا ہے…',copied:'لنک کاپی ہو گیا',loginFirst:'پہلے گٹ ہب ٹوکن سے لاگ ان کریں'},
+sd:{home:'گهر',upload:'اپلوڊ',account:'کاتو',search:'PDF ڳوليو…',free:'مفت',paid:'ادائگي وارو',download:'ڊائونلوڊ',copyLink:'لنڪ ڪاپي ڪريو',listen:'ٻڌو',stop:'بس ڪريو',del:'ڊليٽ ڪريو',title:'عنوان',desc:'وضاحت',makePdf:'PDF ٺاهيو',fromDevice:'ڊوائيس مان',addText:'+ لکت',addImage:'+ تصوير',pageSize:'صفحي جو سائيز',orient:'رخ',portrait:'عمودي',landscape:'افقي',margin:'حاشيو (mm)',bg:'صفحي جو رنگ',border:'ڪنڊ',pageNums:'صفحا نمبر',preview:'لائيو پريويو',publish:'شايع ڪريو',token:'گٽ هب ٽوڪن',login:'لاگ ان',logout:'لاگ آئوٽ',voice:'آواز',record:'آواز رڪارڊ ڪريو',stopRec:'رڪارڊنگ بند ڪريو',chooseAudio:'آڊيو فائل چونڊيو',unlock:'کوليو',code:'ان لاڪ ڪوڊ',price:'قيمت (PKR)',empty:'اڃا ڪا PDF ڪانهي. پهرين توهان اپلوڊ ڪريو!',loading:'لوڊ ٿي رهيو آهي…',copied:'لنڪ ڪاپي ٿي وئي',loginFirst:'پهرين گٽ هب ٽوڪن سان لاگ ان ڪريو'}
+};
+const $=s=>document.querySelector(s);
+const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+let lang=localStorage.gp_lang||'en';
+let theme=localStorage.gp_theme||(matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light');
+const t=k=>(I18N[lang]&&I18N[lang][k])||I18N.en[k]||k;
+const S={token:localStorage.gp_token||'',user:localStorage.gp_user||''};
+const app=$('#app');
+let ITEMS=null,V={},audioBlob=null,audioExt='',deviceFile=null,tab='make',recorder=null;
+
+function toast(m,ms){const e=$('#toast');e.textContent=m;e.style.display='block';e.onclick=()=>e.style.display='none';clearTimeout(toast.t);toast.t=setTimeout(()=>e.style.display='none',ms||3500)}
+function busy(m){const b=$('#busy');if(!m){b.style.display='none';return}$('#busyt').textContent=m;b.style.display='grid'}
+
+/* ---------- GitHub helpers ---------- */
+async function gh(path,opts={}){
+  const h={Accept:'application/vnd.github+json'};
+  if(S.token)h.Authorization='Bearer '+S.token;
+  const r=await fetch('https://api.github.com'+path,{...opts,headers:{...h,...(opts.headers||{})}});
+  if(!r.ok){const j=await r.json().catch(()=>({}));const e=new Error(j.message||('Error '+r.status));e.status=r.status;throw e}
+  return r.status===204?null:r.json();
+}
+function b64(buf){const b=new Uint8Array(buf);let s='';for(let i=0;i<b.length;i+=0x8000)s+=String.fromCharCode.apply(null,b.subarray(i,i+0x8000));return btoa(s)}
+const utf8b64=s=>b64(new TextEncoder().encode(s));
+const b64utf8=s=>new TextDecoder().decode(Uint8Array.from(atob(s.replace(/\n/g,'')),c=>c.charCodeAt(0)));
+const myRepo=()=>`/repos/${S.user}/${CONFIG.REPO_NAME}`;
+async function putFile(path,content,msg){
+  const base=`${myRepo()}/contents/${path}`;let last;
+  for(let n=0;n<4;n++){
+    try{
+      let sha;try{sha=(await gh(base)).sha}catch(e){if(e.status!==404)throw e}
+      return await gh(base,{method:'PUT',body:JSON.stringify({message:msg,content,sha})});
+    }catch(e){last=e;if(![404,409,422,502,503].includes(e.status))throw e;await new Promise(r=>setTimeout(r,2000))}
+  }
+  throw last;
+}
+async function delFile(path){
+  const base=`${myRepo()}/contents/${path}`;
+  try{const r=await gh(base);await gh(base,{method:'DELETE',body:JSON.stringify({message:'Delete',sha:r.sha})})}catch(e){if(e.status!==404)throw e}
+}
+async function readMeta(){
+  try{const r=await gh(`${myRepo()}/contents/meta.json`);return JSON.parse(b64utf8(r.content))}catch(e){if(e.status===404)return[];throw e}
+}
+async function ensureRepo(){
+  try{await gh(myRepo())}catch(e){
+    if(e.status!==404)throw e;
+    await gh('/user/repos',{method:'POST',body:JSON.stringify({name:CONFIG.REPO_NAME,description:'Global PDF files',auto_init:true,private:false})});
+    for(let n=0;n<10;n++){await new Promise(r=>setTimeout(r,1500));try{await gh(`${myRepo()}/contents/README.md`);break}catch(e){}}
+  }
+  try{await gh(`${myRepo()}/topics`,{method:'PUT',body:JSON.stringify({names:[CONFIG.TOPIC]})})}catch(e){}
+}
+const rawUrl=(m,p)=>`https://raw.githubusercontent.com/${m.repo}/${m.branch||'main'}/${p}`;
+async function loadAll(){
+  let repos=[];
+  try{const r=await gh(`/search/repositories?q=topic:${CONFIG.TOPIC}&sort=updated&per_page=50`);repos=r.items.map(i=>({full:i.full_name,branch:i.default_branch}))}catch(e){}
+  const extra=[...CONFIG.FEATURED_REPOS,...JSON.parse(localStorage.gp_repos||'[]')];
+  extra.forEach(f=>{if(!repos.find(r=>r.full===f))repos.push({full:f,branch:'main'})});
+  const lists=await Promise.all(repos.map(async r=>{
+    try{const x=await fetch(`https://raw.githubusercontent.com/${r.full}/${r.branch}/meta.json?t=${Math.floor(Date.now()/60000)}`);if(!x.ok)return[];
+      return (await x.json()).map(m=>({...m,repo:r.full,branch:r.branch})).filter(m=>/^[\w.-]+\/[\w.-]+$/.test(m.repo)&&/^[\w-]+$/.test(m.id))}catch(e){return[]}
+  }));
+  return lists.flat().sort((a,b)=>(b.created||0)-(a.created||0));
+}
+
+/* ---------- Locking paid PDFs (AES-GCM, key from the unlock code) ---------- */
+async function deriveKey(code,salt){
+  const k=await crypto.subtle.importKey('raw',new TextEncoder().encode(code),'PBKDF2',false,['deriveKey']);
+  return crypto.subtle.deriveKey({name:'PBKDF2',salt,iterations:150000,hash:'SHA-256'},k,{name:'AES-GCM',length:256},false,['encrypt','decrypt']);
+}
+async function encBytes(buf,code){
+  const salt=crypto.getRandomValues(new Uint8Array(16)),iv=crypto.getRandomValues(new Uint8Array(12));
+  const key=await deriveKey(code,salt);
+  const ct=new Uint8Array(await crypto.subtle.encrypt({name:'AES-GCM',iv},key,buf));
+  const out=new Uint8Array(28+ct.length);out.set(salt,0);out.set(iv,16);out.set(ct,28);return out.buffer;
+}
+async function decBytes(buf,code){
+  const u=new Uint8Array(buf);const key=await deriveKey(code,u.slice(0,16));
+  return crypto.subtle.decrypt({name:'AES-GCM',iv:u.slice(16,28)},key,u.slice(28));
+}
+
+/* ---------- PDF maker (draws pages on canvas so Urdu/Sindhi shaping works) ---------- */
+const SIZES={A4:[210,297],A5:[148,210],A3:[297,420],Letter:[215.9,279.4],Legal:[215.9,355.6]};
+const PXMM=96/25.4;
+const FONTS=['Inter','Lora','Noto Naskh Arabic','Noto Nastaliq Urdu','Arial','Times New Roman','Courier New'];
+const newText=()=>({type:'text',text:'',font:'Inter',size:18,color:'#111111',bold:false,italic:false,align:'auto',dir:'auto',lh:1.6});
+const D={size:'A4',cw:210,ch:297,orient:'portrait',margin:15,bg:'#ffffff',border:false,borderColor:'#333333',nums:true,blocks:[newText()]};
+const pageDims=()=>{let [w,h]=D.size==='Custom'?[+D.cw||210,+D.ch||297]:SIZES[D.size];if(D.orient==='landscape')[w,h]=[h,w];return{w,h}};
+const mc=document.createElement('canvas').getContext('2d');
+const RTL=/[\u0590-\u08FF\uFB50-\uFEFF]/;
+
+async function renderDoc(scale){
+  const {w,h}=pageDims();const PW=w*PXMM,PH=h*PXMM,M=Math.max(0,+D.margin||0)*PXMM,CW=PW-2*M;
+  const texts=D.blocks.filter(b=>b.type==='text');
+  await Promise.all([...new Set(texts.map(b=>b.font))].map(f=>document.fonts.load(`16px "${f}"`,texts.filter(b=>b.font===f).map(b=>b.text).join('').slice(0,3000)||'a').catch(()=>{})));
+  const pages=[];let cx,y;
+  const np=()=>{const c=document.createElement('canvas');c.width=Math.round(PW*scale);c.height=Math.round(PH*scale);cx=c.getContext('2d');cx.scale(scale,scale);
+    cx.fillStyle=D.bg;cx.fillRect(0,0,PW,PH);
+    if(D.border){cx.strokeStyle=D.borderColor;cx.lineWidth=2;cx.strokeRect(M/2,M/2,PW-M,PH-M)}
+    y=M;pages.push(c)};
+  np();
+  for(const b of D.blocks){
+    if(b.type==='text'){
+      const size=Math.max(6,+b.size||16),lh=size*(+b.lh||1.5);
+      const fs=`${b.italic?'italic ':''}${b.bold?'700':'400'} ${size}px "${b.font}", "Noto Naskh Arabic", sans-serif`;
+      const rtl=b.dir==='rtl'||(b.dir==='auto'&&RTL.test(b.text));
+      mc.font=fs;const lines=[];
+      for(const para of b.text.split('\n')){
+        if(!para.trim()){lines.push('');continue}
+        let cur='';
+        for(const wd of para.split(/\s+/).filter(Boolean)){
+          const test=cur?cur+' '+wd:wd;
+          if(mc.measureText(test).width>CW&&cur){lines.push(cur);cur=wd}else cur=test;
+          while(mc.measureText(cur).width>CW&&cur.length>1){let k=cur.length-1;while(k>1&&mc.measureText(cur.slice(0,k)).width>CW)k--;lines.push(cur.slice(0,k));cur=cur.slice(k)}
+        }
+        lines.push(cur);
+      }
+      for(const ln of lines){
+        if(y+lh>PH-M&&y>M)np();
+        if(ln){
+          cx.font=fs;cx.fillStyle=b.color;cx.textBaseline='top';cx.direction=rtl?'rtl':'ltr';
+          const al=b.align==='auto'?(rtl?'right':'left'):b.align;cx.textAlign=al;
+          cx.fillText(ln,al==='left'?M:al==='right'?PW-M:PW/2,y+(lh-size)/2);
+        }
+        y+=lh;
+      }
+      y+=size*0.4;
+    }else if(b.img){
+      let iw=CW*(+b.w||80)/100,ih=iw*b.img.height/b.img.width;
+      if(ih>PH-2*M){ih=PH-2*M;iw=ih*b.img.width/b.img.height}
+      if(y+ih>PH-M&&y>M)np();
+      const x=b.align==='left'?M:b.align==='right'?PW-M-iw:M+(CW-iw)/2;
+      cx.drawImage(b.img,x,y,iw,ih);y+=ih+10;
+    }
+  }
+  if(D.nums)pages.forEach((c,i)=>{const x=c.getContext('2d');x.save();x.scale(scale,scale);x.font='11px Inter, sans-serif';x.fillStyle='#777';x.textAlign='center';x.textBaseline='bottom';x.direction='ltr';x.fillText(`${i+1} / ${pages.length}`,PW/2,PH-Math.min(M/2,14));x.restore()});
+  return pages;
+}
+function mkThumb(c){const k=240/c.width,t=document.createElement('canvas');t.width=240;t.height=Math.round(c.height*k);t.getContext('2d').drawImage(c,0,0,t.width,t.height);return t.toDataURL('image/jpeg',.6)}
+async function buildPdf(){
+  const cv=await renderDoc(2);const {w,h}=pageDims();const J=window.jspdf.jsPDF;
+  const o=w>h?'l':'p';const doc=new J({unit:'mm',format:[w,h],orientation:o,compress:true});
+  let thumb='';
+  for(let i=0;i<cv.length;i++){
+    if(i===0)thumb=mkThumb(cv[0]);else doc.addPage([w,h],o);
+    doc.addImage(cv[i].toDataURL('image/jpeg',.9),'JPEG',0,0,w,h);cv[i].width=cv[i].height=0;
+  }
+  return{buf:doc.output('arraybuffer'),pages:cv.length,thumb,text:D.blocks.filter(b=>b.type==='text').map(b=>b.text).join('\n\n').trim()};
+}
+async function readFile(f){
+  try{return await f.arrayBuffer()}catch(e){
+    return new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(r.result);r.onerror=()=>rej(new Error('Could not read this file. If it is in Google Drive or Downloads, copy it to your phone storage first.'));r.readAsArrayBuffer(f)});
+  }
+}
+function loadImg(file){return new Promise(res=>{const r=new FileReader();r.onload=()=>{const im=new Image();im.onload=()=>{
+  const k=Math.min(1,1600/Math.max(im.width,im.height)),c=document.createElement('canvas');c.width=im.width*k;c.height=im.height*k;
+  const x=c.getContext('2d');x.fillStyle='#fff';x.fillRect(0,0,c.width,c.height);x.drawImage(im,0,0,c.width,c.height);
+  const out=new Image();out.onload=()=>res(out);out.src=c.toDataURL('image/jpeg',.85)};im.src=r.result};r.readAsDataURL(file)})}
+async function pdfThumb(buf){
+  const pdf=await pdfjsLib.getDocument({data:buf.slice(0)}).promise;const p=await pdf.getPage(1);
+  const v0=p.getViewport({scale:1}),vp=p.getViewport({scale:240/v0.width});
+  const c=document.createElement('canvas');c.width=vp.width;c.height=vp.height;const x=c.getContext('2d');x.fillStyle='#fff';x.fillRect(0,0,c.width,c.height);
+  await p.render({canvasContext:x,viewport:vp}).promise;return{thumb:c.toDataURL('image/jpeg',.6),pages:pdf.numPages};
+}
+
+/* ---------- Header & routing ---------- */
+function header(){
+  document.documentElement.lang=lang==='sd'?'sd':lang;document.documentElement.dir=lang==='en'?'ltr':'rtl';document.documentElement.dataset.theme=theme;
+  const h=location.hash.slice(1)||'/';
+  $('#hdr').innerHTML=`<div class="bar"><a class="logo" href="#/">${esc(CONFIG.SITE_NAME)}</a>
+  <nav><a href="#/" class="${h==='/'?'on':''}">${t('home')}</a><a href="#/upload" class="${h==='/upload'?'on':''}">${t('upload')}</a><a href="#/account" class="${h==='/account'?'on':''}">${S.user?esc(S.user):t('account')}</a></nav>
+  <select id="lg" aria-label="Language"><option value="en">English</option><option value="ur">اردو</option><option value="sd">سنڌي</option></select>
+  <button class="btn" id="th" aria-label="Theme">◐</button></div>`;
+  $('#lg').value=lang;
+  $('#lg').onchange=e=>{lang=e.target.value;localStorage.gp_lang=lang;header();route()};
+  $('#th').onclick=()=>{theme=theme==='dark'?'light':'dark';localStorage.gp_theme=theme;header()};
+}
+function route(){
+  const p=(location.hash.slice(1)||'/').split('/').filter(Boolean);
+  if(p[0]==='v'&&p.length>=4)return viewViewer(p[1]+'/'+p[2],p[3]);
+  if(p[0]==='upload')return viewUpload();
+  if(p[0]==='account')return viewAccount();
+  return viewHome();
+}
+addEventListener('hashchange',()=>{speechSynthesis.cancel();header();route();scrollTo(0,0)});
+
+/* ---------- Home ---------- */
+async function viewHome(){
+  app.innerHTML=`<div class="card"><input id="q" class="inp" placeholder="${esc(t('search'))}"></div><div id="grid" class="grid"><p class="mut">${t('loading')}</p></div>`;
+  const draw=()=>{
+    const q=($('#q')?.value||'').toLowerCase();
+    const list=(ITEMS||[]).filter(m=>!q||(m.title+' '+m.owner+' '+(m.desc||'')).toLowerCase().includes(q));
+    const g=$('#grid');if(!g)return;
+    g.innerHTML=list.length?list.map(m=>`<a class="pc" href="#/v/${esc(m.repo)}/${esc(m.id)}"><div class="th">${m.thumb?`<img alt="" src="${esc(m.thumb)}">`:'PDF'}${m.paid?`<i class="bd">${esc(m.price)} PKR</i>`:`<i class="bd g">${t('free')}</i>`}</div><div class="pt">${esc(m.title)}</div><div class="mut">${esc(m.owner)}</div></a>`).join(''):`<p class="mut">${t('empty')}</p>`;
+  };
+  $('#q').oninput=draw;
+  if(!ITEMS)ITEMS=await loadAll();
+  draw();
+}
+
+/* ---------- Viewer ---------- */
+async function viewViewer(repo,id){
+  app.innerHTML=`<div class="card">${t('loading')}</div>`;
+  let m=(ITEMS||[]).find(x=>x.repo===repo&&x.id===id);
+  if(!m){try{const r=await fetch(`https://raw.githubusercontent.com/${repo}/main/meta.json?t=${Date.now()}`);m=(await r.json()).find(x=>x.id===id);if(m){m.repo=repo;m.branch='main'}}catch(e){}}
+  if(!m){app.innerHTML='<div class="card">PDF not found.</div>';return}
+  V={m,code:'',pdf:null,buf:null};
+  const fee=Math.round((+m.price||0)*CONFIG.FEE_PERCENT)/100,total=(+m.price||0)+fee;
+  const wa=String(m.contact||'').replace(/\D/g,'').replace(/^0/,'92');
+  app.innerHTML=`<div class="card"><h2>${esc(m.title)}</h2>
+  <div class="mut">${esc(m.owner)} • <a target="_blank" rel="noopener" href="https://github.com/${esc(m.owner)}">GitHub</a>${m.pages?' • '+esc(m.pages)+' pages':''}</div>
+  <p>${esc(m.desc||'')}</p>
+  <div id="lock" ${m.enc?'':'hidden'}>
+    <div class="pay"><b>${esc(m.price)} PKR</b> + ${CONFIG.FEE_PERCENT}% (${fee} PKR) = <b>${total} PKR</b>
+    <ol>
+      <li>Send <b>${esc(m.price)} PKR</b> by JazzCash to <b>${esc(m.payNum)}</b> (${esc(m.payName||m.owner)}).</li>
+      <li>Send <b>${fee} PKR</b> by JazzCash to <b>${esc(CONFIG.COMPANY_JAZZCASH)}</b> (${esc(CONFIG.COMPANY_NAME)}).</li>
+      <li>Send both payment screenshots to the seller${wa?` on <a target="_blank" rel="noopener" href="https://wa.me/${wa}">WhatsApp</a>`:''}.</li>
+      <li>Type the unlock code the seller gives you.</li>
+    </ol>
+    <div class="row"><label>${t('code')}<input id="ucode" type="text" autocomplete="off"></label><button class="btn pri" id="unl">${t('unlock')}</button></div></div>
+  </div>
+  <div class="row" id="acts" hidden><button class="btn pri" id="dl">${t('download')}</button><button class="btn" id="cp">${t('copyLink')}</button>${S.user&&m.owner===S.user?`<button class="btn dan" id="rm">${t('del')}</button>`:''}</div>
+  <div id="voice" class="hint" style="margin-top:12px" hidden>
+    <b>${t('voice')}</b>
+    <div class="row" style="margin-top:6px"><label>Voice<select id="vl"><option value="en-US">English</option><option value="ur-PK">اردو</option><option value="ar-SA">العربية</option></select></label>
+    <button class="btn" id="ls">${t('listen')}</button><button class="btn" id="sp">${t('stop')}</button></div>
+    <div id="aud" style="margin-top:8px"></div>
+  </div></div><div id="pages"></div>`;
+  $('#vl').value=m.tts||'en-US';
+  if(!m.enc){
+    try{const r=await fetch(rawUrl(m,`pdfs/${m.id}.pdf`));if(!r.ok)throw 0;await openPdf(await r.arrayBuffer())}catch(e){toast('Could not load this PDF')}
+  }else{
+    $('#unl').onclick=async()=>{
+      const code=$('#ucode').value.trim();if(!code)return;busy('…');
+      try{const r=await fetch(rawUrl(m,`pdfs/${m.id}.pdf.enc`));const buf=await decBytes(await r.arrayBuffer(),code);V.code=code;$('#lock').hidden=true;busy();await openPdf(buf)}
+      catch(e){busy();toast('Wrong unlock code')}
+    };
+  }
+}
+async function openPdf(buf){
+  const m=V.m;V.buf=buf;
+  V.pdf=await pdfjsLib.getDocument({data:buf.slice(0)}).promise;
+  $('#acts').hidden=false;$('#voice').hidden=false;
+  const box=$('#pages');box.innerHTML='';
+  const width=Math.min(box.clientWidth||600,900);
+  for(let i=1;i<=V.pdf.numPages;i++){
+    const p=await V.pdf.getPage(i),v0=p.getViewport({scale:1}),vp=p.getViewport({scale:width/v0.width*Math.min(devicePixelRatio||1,2)});
+    const c=document.createElement('canvas');c.width=vp.width;c.height=vp.height;box.appendChild(c);
+    await p.render({canvasContext:c.getContext('2d'),viewport:vp}).promise;
+  }
+  $('#dl').onclick=()=>{const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([V.buf],{type:'application/pdf'}));a.download=(m.title||'file')+'.pdf';a.click()};
+  $('#cp').onclick=()=>{const u=location.origin+location.pathname+`#/v/${m.repo}/${m.id}`;(navigator.clipboard?navigator.clipboard.writeText(u):Promise.reject()).then(()=>toast(t('copied')),()=>prompt('Copy link',u))};
+  $('#ls').onclick=async()=>{busy('…');let txt='';try{txt=await getText()}catch(e){}busy();if(!txt.trim()){toast('No readable text');return}speak(txt,$('#vl').value)};
+  $('#sp').onclick=()=>speechSynthesis.cancel();
+  if($('#rm'))$('#rm').onclick=removePdf;
+  if(m.audio){
+    const mime={webm:'audio/webm',mp4:'audio/mp4',m4a:'audio/mp4',mp3:'audio/mpeg',ogg:'audio/ogg',wav:'audio/wav'}[m.audio]||'audio/webm';
+    try{
+      if(m.enc){const r=await fetch(rawUrl(m,`audio/${m.id}.${m.audio}.enc`));const d=await decBytes(await r.arrayBuffer(),V.code);$('#aud').innerHTML=`<audio controls src="${URL.createObjectURL(new Blob([d],{type:mime}))}" style="width:100%"></audio>`}
+      else $('#aud').innerHTML=`<audio controls preload="none" src="${esc(rawUrl(m,`audio/${m.id}.${m.audio}`))}" style="width:100%"></audio>`;
+    }catch(e){}
+  }
+}
+async function getText(){
+  const m=V.m;
+  if(m.hasText){const r=await fetch(rawUrl(m,`pdfs/${m.id}.txt${m.enc?'.enc':''}`));let b=await r.arrayBuffer();if(m.enc)b=await decBytes(b,V.code);return new TextDecoder().decode(b)}
+  let s='';for(let i=1;i<=V.pdf.numPages;i++){const c=await (await V.pdf.getPage(i)).getTextContent();s+=c.items.map(x=>x.str).join(' ')+'\n'}return s;
+}
+function speak(text,lg){
+  speechSynthesis.cancel();
+  (text.match(/[^.!?۔\n]{1,200}[.!?۔\n]?/g)||[text]).forEach(c=>{if(!c.trim())return;const u=new SpeechSynthesisUtterance(c.trim());u.lang=lg;speechSynthesis.speak(u)});
+}
+async function removePdf(){
+  if(!confirm('Delete this PDF?'))return;const m=V.m;busy('…');
+  try{
+    for(const p of [`pdfs/${m.id}.pdf`,`pdfs/${m.id}.pdf.enc`,`pdfs/${m.id}.txt`,`pdfs/${m.id}.txt.enc`,...(m.audio?[`audio/${m.id}.${m.audio}`,`audio/${m.id}.${m.audio}.enc`]:[])])await delFile(p);
+    const meta=(await readMeta()).filter(x=>x.id!==m.id);await putFile('meta.json',utf8b64(JSON.stringify(meta)),'Update index');
+    ITEMS=null;busy();location.hash='#/';
+  }catch(e){busy();toast(e.message)}
+}
+
+/* ---------- Account ---------- */
+const F={title:'',desc:'',tts:'en-US',paid:false,price:'',code:'',cover:true,...JSON.parse(localStorage.gp_seller||'{}')};
+function viewAccount(){
+  if(S.user){
+    app.innerHTML=`<div class="card"><h2>@${esc(S.user)}</h2><p class="mut">Your PDFs are saved in your own GitHub repo <b>${esc(CONFIG.REPO_NAME)}</b>.</p>
+    <h3>Seller details (for paid PDFs)</h3><div class="row">
+    <label>JazzCash number<input id="sn" type="tel" value="${esc(F.payNum||'')}"></label>
+    <label>Account name<input id="sm" type="text" value="${esc(F.payName||'')}"></label>
+    <label>WhatsApp number<input id="sc" type="tel" value="${esc(F.contact||'')}"></label></div>
+    <div class="row" style="margin-top:12px"><button class="btn pri" id="sv">Save</button><button class="btn dan" id="lo">${t('logout')}</button></div></div>`;
+    $('#sv').onclick=()=>{F.payNum=$('#sn').value.trim();F.payName=$('#sm').value.trim();F.contact=$('#sc').value.trim();saveSeller();toast('Saved')};
+    $('#lo').onclick=()=>{S.token='';S.user='';localStorage.removeItem('gp_token');localStorage.removeItem('gp_user');header();route()};
+  }else{
+    app.innerHTML=`<div class="card"><h2>${t('token')}</h2>
+    <ol><li>Tap <a target="_blank" rel="noopener" href="https://github.com/settings/tokens/new?scopes=public_repo&description=Global%20PDF">Create token on GitHub</a> and log in.</li>
+    <li>Keep only <b>public_repo</b> ticked, choose an expiry, tap <b>Generate token</b>.</li><li>Copy the token and paste it below.</li></ol>
+    <p class="hint">The token stays only in this browser. Never share it with anyone and never put it inside the website code.</p>
+    <div class="row"><label>${t('token')}<input id="tk" type="password" placeholder="ghp_…" autocomplete="off"></label><button class="btn pri" id="lgn">${t('login')}</button></div></div>`;
+    $('#lgn').onclick=async()=>{
+      const v=$('#tk').value.trim();if(!v)return;S.token=v;busy('…');
+      try{const u=await gh('/user');S.user=u.login;localStorage.gp_token=v;localStorage.gp_user=u.login;busy();header();route()}
+      catch(e){S.token='';busy();toast('Invalid token')}
+    };
+  }
+}
+const saveSeller=()=>localStorage.gp_seller=JSON.stringify({payNum:F.payNum||'',payName:F.payName||'',contact:F.contact||''});
+
+/* ---------- Upload ---------- */
+let prevTok=0,prevTimer;
+function schedulePreview(){
+  clearTimeout(prevTimer);
+  prevTimer=setTimeout(async()=>{
+    const box=$('#prev');if(!box)return;const my=++prevTok;
+    const cv=await renderDoc(1.2);if(my!==prevTok||!$('#prev'))return;
+    box.replaceChildren(...cv);const n=$('#pgn');if(n)n.textContent=cv.length;
+  },350);
+}
+const opts=(arr,sel)=>arr.map(v=>`<option ${v===sel?'selected':''}>${esc(v)}</option>`).join('');
+function blockHtml(b,i){
+  const head=`<div class="blk-h"><b>${b.type==='text'?'Text':'Image'} ${i+1}</b><span><button class="btn" data-act="up">↑</button><button class="btn" data-act="down">↓</button><button class="btn dan" data-act="del">✕</button></span></div>`;
+  if(b.type==='text')return `<div class="blk" data-i="${i}">${head}
+  <textarea data-f="text" dir="auto" placeholder="Type here…">${esc(b.text)}</textarea>
+  <div class="row"><label>Font<select data-f="font">${opts(FONTS,b.font)}</select></label>
+  <label>Size<input type="number" data-f="size" min="8" max="120" value="${b.size}"></label>
+  <label>Line<input type="number" data-f="lh" min="1" max="3" step="0.1" value="${b.lh}"></label>
+  <label>Color<input type="color" data-f="color" value="${b.color}"></label>
+  <label>Align<select data-f="align">${opts(['auto','left','center','right'],b.align)}</select></label>
+  <label>Direction<select data-f="dir">${opts(['auto','ltr','rtl'],b.dir)}</select></label>
+  <label class="chk"><input type="checkbox" data-f="bold" ${b.bold?'checked':''}>Bold</label>
+  <label class="chk"><input type="checkbox" data-f="italic" ${b.italic?'checked':''}>Italic</label></div></div>`;
+  return `<div class="blk" data-i="${i}">${head}<img alt="" src="${b.img.src}">
+  <div class="row"><label>Width %<input type="range" data-f="w" min="10" max="100" value="${b.w}"></label>
+  <label>Align<select data-f="align">${opts(['left','center','right'],b.align)}</select></label></div></div>`;
+}
+function renderBlocks(){$('#blocks').innerHTML=D.blocks.map(blockHtml).join('')}
+function viewUpload(){
+  app.innerHTML=`${S.token?'':`<div class="card hint">${t('loginFirst')}. <a href="#/account">${t('login')}</a></div>`}<div class="card"><div class="tabs"><button data-tab="make" class="${tab==='make'?'on':''}">${t('makePdf')}</button><button data-tab="device" class="${tab==='device'?'on':''}">${t('fromDevice')}</button></div>
+  <div id="t-make" ${tab==='make'?'':'hidden'}>
+    <div class="row">
+      <label>${t('pageSize')}<select id="dSize">${opts(['A4','A5','A3','Letter','Legal','Custom'],D.size)}</select></label>
+      <label id="cw" ${D.size==='Custom'?'':'hidden'}>Width mm<input id="dCw" type="number" value="${D.cw}"></label>
+      <label id="ch" ${D.size==='Custom'?'':'hidden'}>Height mm<input id="dCh" type="number" value="${D.ch}"></label>
+      <label>${t('orient')}<select id="dOri"><option value="portrait" ${D.orient==='portrait'?'selected':''}>${t('portrait')}</option><option value="landscape" ${D.orient==='landscape'?'selected':''}>${t('landscape')}</option></select></label>
+      <label>${t('margin')}<input id="dMar" type="number" min="0" max="60" value="${D.margin}"></label>
+      <label>${t('bg')}<input id="dBg" type="color" value="${D.bg}"></label>
+      <label class="chk"><input id="dBor" type="checkbox" ${D.border?'checked':''}>${t('border')}</label>
+      <label>${t('border')}<input id="dBorC" type="color" value="${D.borderColor}"></label>
+      <label class="chk"><input id="dNum" type="checkbox" ${D.nums?'checked':''}>${t('pageNums')}</label>
+    </div>
+    <div id="blocks"></div>
+    <div class="row" style="margin:10px 0"><button class="btn pri" id="aT">${t('addText')}</button><button class="btn pri" id="aI">${t('addImage')}</button></div>
+    <h3>${t('preview')} (<span id="pgn">1</span>)</h3><div class="prev" id="prev"></div>
+  </div>
+  <div id="t-dev" ${tab==='device'?'':'hidden'}>
+    <label class="mut">PDF file (max 25 MB)<input type="file" id="pf" accept=".pdf,application/pdf"></label>
+    <p id="pfi" class="mut">${deviceFile?'Selected: '+esc(deviceFile.name)+' — now tap Publish below':''}</p>
+  </div></div>
+  <div class="card"><h3>${t('title')}</h3>
+    <label class="mut">${t('title')}<input id="fT" type="text" value="${esc(F.title)}"></label>
+    <label class="mut">${t('desc')}<textarea id="fD" rows="3">${esc(F.desc)}</textarea></label>
+    <label class="mut">Voice language<select id="fL"><option value="en-US">English</option><option value="ur-PK">اردو</option><option value="ar-SA">العربية</option></select></label>
+    <p class="mut">Sindhi voices are not available in most browsers. Record your own voice below instead.</p>
+    <h3>${t('price')}</h3>
+    <div class="row"><label class="chk"><input type="radio" name="pm" id="pmF" ${F.paid?'':'checked'}>${t('free')}</label><label class="chk"><input type="radio" name="pm" id="pmP" ${F.paid?'checked':''}>${t('paid')}</label></div>
+    <div id="paidBox" ${F.paid?'':'hidden'}><div class="row" style="margin-top:8px">
+      <label>${t('price')}<input id="fP" type="number" min="1" value="${esc(F.price)}"></label>
+      <label>${t('code')}<input id="fC" type="text" autocomplete="off" value="${esc(F.code)}"></label>
+      <label>JazzCash number<input id="fN" type="tel" value="${esc(F.payNum||'')}"></label>
+      <label>Account name<input id="fM" type="text" value="${esc(F.payName||'')}"></label>
+      <label>WhatsApp number<input id="fW" type="tel" value="${esc(F.contact||'')}"></label>
+      <label class="chk"><input id="fV" type="checkbox" ${F.cover?'checked':''}>Show page 1 as cover</label></div>
+      <p class="hint">The PDF is locked with your unlock code before upload. Only people who have the code can open it. Buyers pay ${CONFIG.FEE_PERCENT}% extra to ${esc(CONFIG.COMPANY_NAME)}.</p></div>
+    <h3>${t('voice')}</h3>
+    <div class="row"><button class="btn" id="rec">${t('record')}</button><label class="mut" style="flex:2 1 200px">${t('chooseAudio')}<input id="af" type="file" accept="audio/*"></label></div>
+    <div id="ap" style="margin-top:8px"></div>
+  </div>
+  <button class="btn pri" id="pub" style="width:100%;padding:12px">${t('publish')}</button>`;
+  bindUpload();renderBlocks();schedulePreview();
+  if(audioBlob)$('#ap').innerHTML=`<audio controls src="${URL.createObjectURL(audioBlob)}" style="width:100%"></audio>`;
+}
+function bindUpload(){
+  document.querySelectorAll('.tabs button').forEach(b=>b.onclick=()=>{tab=b.dataset.tab;viewUpload()});
+  const map={dSize:'size',dCw:'cw',dCh:'ch',dOri:'orient',dMar:'margin',dBg:'bg',dBor:'border',dBorC:'borderColor',dNum:'nums'};
+  Object.keys(map).forEach(id=>{$('#'+id).oninput=e=>{const x=e.target;D[map[id]]=x.type==='checkbox'?x.checked:x.value;
+    if(id==='dSize'){$('#cw').hidden=$('#ch').hidden=x.value!=='Custom'}schedulePreview()}});
+  const bl=$('#blocks');
+  bl.oninput=e=>{const w=e.target.closest('[data-i]');const f=e.target.dataset.f;if(!w||!f)return;const b=D.blocks[+w.dataset.i],x=e.target;
+    b[f]=x.type==='checkbox'?x.checked:(x.type==='number'||x.type==='range')?(+x.value):x.value;schedulePreview()};
+  bl.onclick=e=>{const a=e.target.dataset.act,w=e.target.closest('[data-i]');if(!a||!w)return;const i=+w.dataset.i,B=D.blocks;
+    if(a==='del')B.splice(i,1);
+    if(a==='up'&&i>0)[B[i-1],B[i]]=[B[i],B[i-1]];
+    if(a==='down'&&i<B.length-1)[B[i+1],B[i]]=[B[i],B[i+1]];
+    renderBlocks();schedulePreview()};
+  $('#aT').onclick=()=>{D.blocks.push(newText());renderBlocks();schedulePreview()};
+  $('#aI').onclick=()=>$('#imgIn').click();
+  $('#imgIn').onchange=async e=>{for(const f of e.target.files){const im=await loadImg(f);D.blocks.push({type:'image',img:im,w:80,align:'center'})}e.target.value='';renderBlocks();schedulePreview()};
+  $('#pf').onchange=e=>{
+    const f=e.target.files[0];if(!f)return;
+    if(f.size>25*1048576){toast('File is larger than 25 MB');return}
+    deviceFile={file:f,name:f.name,thumb:'',pages:0};
+    $('#pfi').textContent='Selected: '+f.name+' — now tap Publish below';
+    if(!F.title){F.title=f.name.replace(/\.pdf$/i,'');$('#fT').value=F.title}
+    (async()=>{try{const th=await pdfThumb(await readFile(f));if(deviceFile&&deviceFile.file===f){deviceFile.thumb=th.thumb;deviceFile.pages=th.pages;const p=$('#pfi');if(p)p.textContent='Selected: '+f.name+' • '+th.pages+' pages — now tap Publish below'}}catch(err){console.warn(err)}})();
+  };
+  const bind=(id,k,chk)=>{$('#'+id).oninput=e=>F[k]=chk?e.target.checked:e.target.value};
+  bind('fT','title');bind('fD','desc');bind('fL','tts');bind('fP','price');bind('fC','code');bind('fN','payNum');bind('fM','payName');bind('fW','contact');bind('fV','cover',1);
+  $('#fL').value=F.tts;
+  $('#pmF').onchange=$('#pmP').onchange=()=>{F.paid=$('#pmP').checked;$('#paidBox').hidden=!F.paid};
+  $('#af').onchange=e=>{const f=e.target.files[0];if(!f)return;if(f.size>20*1048576){toast('Audio is larger than 20 MB');return}
+    audioBlob=f;audioExt=(f.name.split('.').pop()||'mp3').toLowerCase();$('#ap').innerHTML=`<audio controls src="${URL.createObjectURL(f)}" style="width:100%"></audio>`};
+  $('#rec').onclick=async()=>{
+    const b=$('#rec');
+    if(recorder){recorder.stop();return}
+    try{
+      const st=await navigator.mediaDevices.getUserMedia({audio:true});const ch=[];recorder=new MediaRecorder(st);
+      recorder.ondataavailable=e=>ch.push(e.data);
+      recorder.onstop=()=>{st.getTracks().forEach(x=>x.stop());const mt=recorder.mimeType||'audio/webm';audioBlob=new Blob(ch,{type:mt});
+        audioExt=mt.includes('mp4')?'mp4':mt.includes('ogg')?'ogg':'webm';recorder=null;b.textContent=t('record');
+        $('#ap').innerHTML=`<audio controls src="${URL.createObjectURL(audioBlob)}" style="width:100%"></audio>`};
+      recorder.start();b.textContent=t('stopRec');
+    }catch(e){recorder=null;toast('Microphone is not allowed')}
+  };
+  $('#pub').onclick=publish;
+}
+async function publish(){
+  if(!S.token){toast(t('loginFirst'));location.hash='#/account';return}
+  const title=F.title.trim();if(!title){toast('Enter a title');return}
+  if(F.paid){if(!(+F.price>0)){toast('Enter a price');return}if((F.code||'').length<4){toast('Unlock code needs 4+ characters');return}if(!(F.payNum||'').trim()){toast('Enter your JazzCash number');return}}
+  let data,stage='preparing the PDF';busy('Preparing PDF…');
+  try{
+    if(tab==='make'){
+      if(!D.blocks.length){busy();toast('Add some text or an image');return}
+      data=await buildPdf();
+    }else{
+      if(!deviceFile){busy();toast('Choose a PDF file');return}
+      stage='reading your file';
+      const buf=await readFile(deviceFile.file);
+      if(!new TextDecoder().decode(new Uint8Array(buf.slice(0,1024))).includes('%PDF')){busy();toast('This file is not a real PDF');return}
+      data={buf,pages:deviceFile.pages,thumb:deviceFile.thumb,text:''};
+    }
+    stage='creating your GitHub repo';await ensureRepo();
+    const id=Date.now().toString(36)+Math.random().toString(36).slice(2,6),paid=!!F.paid,code=F.code;
+    const wrap=async b=>paid?await encBytes(b,code):b;
+    busy('Uploading…');stage='uploading the PDF file';
+    await putFile(`pdfs/${id}.pdf${paid?'.enc':''}`,b64(await wrap(data.buf)),'Add PDF');
+    if(data.text)await putFile(`pdfs/${id}.txt${paid?'.enc':''}`,b64(await wrap(new TextEncoder().encode(data.text).buffer)),'Add text');
+    if(audioBlob)await putFile(`audio/${id}.${audioExt}${paid?'.enc':''}`,b64(await wrap(await audioBlob.arrayBuffer())),'Add voice');
+    const entry={id,title,desc:F.desc.trim(),owner:S.user,created:Date.now(),pages:data.pages,tts:F.tts,hasText:!!data.text,audio:audioBlob?audioExt:'',paid,enc:paid,
+      thumb:(!paid||F.cover)?data.thumb:''};
+    if(paid)Object.assign(entry,{price:+F.price,payNum:F.payNum.trim(),payName:(F.payName||'').trim(),contact:(F.contact||'').trim()});
+    busy('Saving…');stage='saving the list';
+    const meta=await readMeta();meta.push(entry);await putFile('meta.json',utf8b64(JSON.stringify(meta)),'Update index');
+    if(paid)saveSeller();
+    const full=`${S.user}/${CONFIG.REPO_NAME}`,known=JSON.parse(localStorage.gp_repos||'[]');if(!known.includes(full)){known.push(full);localStorage.gp_repos=JSON.stringify(known)}
+    ITEMS=null;audioBlob=null;F.title=F.desc='';F.code='';deviceFile=null;busy();toast('Published');
+    setTimeout(()=>location.hash=`#/v/${full}/${id}`,800);
+  }catch(e){busy();console.error(e);
+    let why=e.message;
+    if(e.status===401)why='Token is invalid or expired. Log in again.';
+    else if(/not accessible|forbidden|permission/i.test(why)||e.status===403)why+=' — use a Classic token with public_repo ticked (not Fine-grained).';
+    toast('Failed while '+stage+': '+why,15000)}
+}
+
+header();route();
+</script>
+</body>
+</html>
